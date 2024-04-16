@@ -9,6 +9,8 @@
 # auto generated files
 *.logrt
 
-/build
-/build_*
-/build-*
+/c++/build
+/c++/build_*
+/c++/build-*
+
+.vscode*
