@@ -48,7 +48,6 @@ public:
 public:
     void run()
     {
-        std::cout << "run task" << std::endl;
         if (!pause)
             runImpl();
     }
@@ -60,16 +59,16 @@ class AsyncTask : public TaskImpl
 {
 public:
     using AsyncResult = std::future<AnyPtr>;
+    using PromiseAny = std::promise<AnyPtr>;
     using Job = std::function<AnyPtr()>;
     
-    AsyncTask(Job task_job_) : task_job(task_job_) {}
+    AsyncTask(Job task_job_) : task_job(task_job_), prom(PromiseAny()), fut(prom.get_future()) {}
     ~AsyncTask() = default;
 
     void runImpl() override
     {
-        std::promise<AnyPtr> prom;
-        fut = prom.get_future();
-        prom.set_value(task_job());
+        AnyPtr res = task_job();
+        prom.set_value(std::move(res));
     }
 
     AnyPtr getResult() override
@@ -78,6 +77,7 @@ public:
     }
 
 private:
+    PromiseAny prom;
     AsyncResult fut;
     Job task_job;
 };
@@ -110,33 +110,46 @@ public:
     {
         for (size_t i = 0; i < max_task; ++i)
         {
-            threads.emplace_back(
-                [this] {
-                    while (!stop)
-                    {
-                        TaskPtr task;
-                        {
-                            std::unique_lock<std::mutex> lock(mutex);
-                            auto pred = [this]() -> bool { return !tasks.empty(); };
-                            task_finished.wait(lock, pred);
-                            if (stop && tasks.empty())
-                                return;
-                            task = std::move(tasks.front());
-                            tasks.pop();
-                            task_finished.notify_one();
-                        }
-                        task->run();
-                    }
+            std::thread t1([this] { worker(); });
+            threads.emplace_back(std::move(t1));
+        }
+    }
+    void worker()
+    {
+        try
+        {
+            while (!stop)
+            {
+                TaskPtr task;
+                {
+                    std::unique_lock<std::mutex> lock(mutex);
+                    auto pred = [this]() -> bool { return !tasks.empty() || stop; };
+                    if (stop)
+                        return;
+                    task_finished.wait(lock, pred);
+                    if (stop && tasks.empty())
+                        return;
+                    task = std::move(tasks.front());
+                    tasks.pop();
+                    task_finished.notify_one();
                 }
-            );
+                task->run();
+            }
+        }
+        catch(...)
+        {
+            std::cout << "Occur some exception in worker, will stop." << std::endl;
         }
     }
     void addTask(TaskPtr task)
     {
         std::unique_lock<std::mutex> lock(mutex);
-        auto pred = [this]() -> bool { return tasks.size() < max_task; };
+        auto pred = [this]() -> bool { return tasks.size() < max_task || stop; };
+        if (stop)
+            return;
         task_finished.wait(lock, pred);
         tasks.emplace(std::move(task));
+        task_finished.notify_all();
     }
     ~ThreadPool()
     {
