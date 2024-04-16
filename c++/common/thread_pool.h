@@ -25,7 +25,7 @@ template <typename T>
 class AnyWrapper : public Any
 {
 public:
-    AnyWrapper(const T& value) : data(value) {}
+    AnyWrapper(const T value) : data(std::move(value)) {}
     ~AnyWrapper() = default;
     std::string typeString() override { return typeid(data).name(); }
     void * getData() override { return &data; }
