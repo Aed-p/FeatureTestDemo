@@ -10,6 +10,8 @@ include_directories(${CMAKE_SOURCE_DIR}/contrib/libunwind/include)
 # add submodule
 add_subdirectory(${CMAKE_SOURCE_DIR}/contrib/libunwind-cmake)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/common)
+
 add_executable(thread_pool_test ${CMAKE_SOURCE_DIR}/ParallelTask.cpp ${common_sources})
 
-target_link_libraries(thread_pool_test pthread LIBUNWIND_LIBRARIES)
+target_link_libraries(thread_pool_test  CxxTestDemo_common)
