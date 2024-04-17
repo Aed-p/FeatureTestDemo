@@ -22,7 +22,7 @@ int main()
 
     for (auto & task : tasks)
     {
-        auto res = task->getResult();
+        auto res = task->moveResult();
         size_t * result = static_cast<size_t *>(res->getData());
         std::cout << "this res is: " << *result << std::endl;
     }

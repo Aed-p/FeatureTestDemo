@@ -43,7 +43,7 @@ public:
     TaskImpl() = default;
     virtual ~TaskImpl() = default;
     virtual void runImpl() = 0;
-    virtual AnyPtr getResult() = 0;
+    virtual AnyPtr moveResult() = 0;
 
 public:
     void run()
@@ -71,7 +71,7 @@ public:
         prom.set_value(std::move(res));
     }
 
-    AnyPtr getResult() override
+    AnyPtr moveResult() override
     {
         return fut.get();
     }
@@ -93,7 +93,7 @@ public:
     {
         task_job();
     }
-    AnyPtr getResult() override
+    AnyPtr moveResult() override
     {
         throw std::runtime_error("Not implemented!");
     }
