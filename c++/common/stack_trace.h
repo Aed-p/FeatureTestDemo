@@ -14,6 +14,7 @@ extern int unw_backtrace(void ** buffer, int size);
 namespace TestDemo
 {
 
+/// FIXME: get real stack trace
 inline std::string CurrentStackTrace() 
 {
     std::stringstream ss("");

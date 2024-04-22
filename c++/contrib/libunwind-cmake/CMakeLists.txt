@@ -58,7 +58,7 @@ if (HAVE_WARNING_REGISTER)
     target_compile_options(unwind PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:-Wno-register>")
 endif ()
 
-target_link_libraries(unwind dl)
+target_link_libraries(unwind dl pthread)
 # install(
 #     TARGETS unwind
 #     EXPORT global

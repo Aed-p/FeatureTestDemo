@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
+set(CMAKE_CXX_STANDARD 20)
 
 project(CxxTestDemo LANGUAGES C CXX)
 
@@ -12,6 +13,10 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/contrib/libunwind-cmake)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/common)
 
-add_executable(thread_pool_test ${CMAKE_SOURCE_DIR}/ParallelTask.cpp ${common_sources})
+add_executable(thread_pool_test ${CMAKE_SOURCE_DIR}/ParallelTask.cpp)
+add_executable(template_demo_test ${CMAKE_SOURCE_DIR}/Template.cpp)
+add_executable(atomic_load_test ${CMAKE_SOURCE_DIR}/atomic_load.cpp)
 
 target_link_libraries(thread_pool_test  CxxTestDemo_common)
+target_link_libraries(template_demo_test CxxTestDemo_common)
+target_link_libraries(atomic_load_test CxxTestDemo_common)

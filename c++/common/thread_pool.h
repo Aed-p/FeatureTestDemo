@@ -10,30 +10,32 @@
 #include <memory>
 #include <mutex>
 #include <iostream>
+#include <any>
 
 namespace TestDemo
 {
 
-class Any
-{
-public:
-    virtual std::string typeString() = 0;
-    virtual void * getData() = 0;
-};
+// class Any
+// {
+// public:
+//     virtual std::string typeString() = 0;
+//     virtual void * getData() = 0;
+// };
 
-template <typename T>
-class AnyWrapper : public Any
-{
-public:
-    AnyWrapper(const T value) : data(std::move(value)) {}
-    ~AnyWrapper() = default;
-    std::string typeString() override { return typeid(data).name(); }
-    void * getData() override { return &data; }
+// template <typename T>
+// class AnyWrapper : public Any
+// {
+// public:
+//     AnyWrapper(const T value) : data(std::move(value)) {}
+//     ~AnyWrapper() = default;
+//     std::string typeString() override { return typeid(data).name(); }
+//     void * getData() override { return &data; }
 
-private:
-    T data;
-};
+// private:
+//     T data;
+// };
 
+using Any = std::any;
 using AnyPtr = std::unique_ptr<Any>;
 
 class TaskImpl
@@ -43,7 +45,7 @@ public:
     TaskImpl() = default;
     virtual ~TaskImpl() = default;
     virtual void runImpl() = 0;
-    virtual AnyPtr moveResult() = 0;
+    virtual Any moveResult() = 0;
 
 public:
     void run()
@@ -58,20 +60,20 @@ private:
 class AsyncTask : public TaskImpl
 {
 public:
-    using AsyncResult = std::future<AnyPtr>;
-    using PromiseAny = std::promise<AnyPtr>;
-    using Job = std::function<AnyPtr()>;
+    using AsyncResult = std::future<Any>;
+    using PromiseAny = std::promise<Any>;
+    using Job = std::function<Any()>;
     
     AsyncTask(Job task_job_) : task_job(task_job_), prom(PromiseAny()), fut(prom.get_future()) {}
     ~AsyncTask() = default;
 
     void runImpl() override
     {
-        AnyPtr res = task_job();
+        Any res = task_job();
         prom.set_value(std::move(res));
     }
 
-    AnyPtr moveResult() override
+    Any moveResult() override
     {
         return fut.get();
     }
@@ -93,7 +95,7 @@ public:
     {
         task_job();
     }
-    AnyPtr moveResult() override
+    Any moveResult() override
     {
         throw std::runtime_error("Not implemented!");
     }
