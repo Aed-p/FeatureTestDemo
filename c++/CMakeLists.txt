@@ -3,6 +3,14 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(CxxTestDemo LANGUAGES C CXX)
 
+# set(LINK_LIBRARIES pthread unwind)
+
+# check sanitizer
+if (SANITIZE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=${SANITIZE}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=${SANITIZE}")
+endif()
+
 file(GLOB common_sources ${CMAKE_SOURCE_DIR}/common/*.cpp ${CMAKE_SOURCE_DIR}/common/*.h)
 
 include_directories(${CMAKE_SOURCE_DIR})
@@ -11,6 +19,7 @@ include_directories(${CMAKE_BINARY_DIR}/contrib/gflags/include)
 
 # add submodule
 add_subdirectory(${CMAKE_SOURCE_DIR}/contrib/libunwind-cmake)
+set(GFLAGS_INTTYPES_FORMAT "C99")
 add_subdirectory(${CMAKE_SOURCE_DIR}/contrib/gflags)
 add_subdirectory(${CMAKE_SOURCE_DIR}/common)
 
